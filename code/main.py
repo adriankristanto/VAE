@@ -63,3 +63,8 @@ def vae_loss(x_reconstructed, x_original):
     # KL divergence
     kl_divergence = -0.5 * torch.sum(1 + log_var - mean ** 2 - torch.exp(log_var))
     return mse_loss + kl_divergence
+
+
+# 4. define the optimiser
+LEARNING_RATE = 0.001
+optimiser = optim.Adam(net.parameters(), lr=LEARNING_RATE)
