@@ -49,9 +49,11 @@ net = VAE(
     output_activation=nn.Sigmoid()
 )
 
+multigpu = False
 if torch.cuda.device_count() > 1:
     print(f'Number of GPUs: {torch.cuda.device_count()}\n', flush=True)
     net = nn.DataParallel(net)
+    multigpu = True
 
 net.to(device)
 
@@ -78,7 +80,7 @@ MODEL_DIRPATH = os.path.dirname(os.path.realpath(__file__)) + '/../saved_models/
 GENERATED_DIRPATH = os.path.dirname(os.path.realpath(__file__)) + '/../generated_images/'
 CONTINUE_TRAIN = False
 CONTINUE_TRAIN_NAME = MODEL_DIRPATH + 'model-epoch10.pth'
-EPOCH = 10
+EPOCH = 50
 SAVE_INTERVAL = 5
 # for generation
 SAMPLE = torch.randn((BATCH_SIZE, Z_DIM))
@@ -99,7 +101,7 @@ def generate(sample, filename):
     net.eval()
     with torch.no_grad():
         sample = sample.to(device)
-        sample = net.decoder(sample)
+        sample = net.module.decoder(sample) if multigpu else net.decoder(sample)
         # unflatten the image to be shown as a generated image
         sample = sample.view(BATCH_SIZE, *IMAGE_SIZE)
         torchvision.utils.save_image(sample, filename)
