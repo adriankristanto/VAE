@@ -85,7 +85,7 @@ class VAE(nn.Module):
         mean, log_var = self.latent_layer(x), self.latent_layer(x)
         z = self.sampling(mean, log_var)
         x = self.decoder(z)
-        return x
+        return mean, log_var, x
 
 if __name__ == "__main__":
     vae = VAE([784, 400], nn.LeakyReLU(), 20, [20, 400, 784], nn.LeakyReLU(), nn.Sigmoid())
