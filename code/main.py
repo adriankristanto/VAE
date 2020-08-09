@@ -44,4 +44,9 @@ net = VAE(
     decoder_activation=nn.LeakyReLU(),
     output_activation=nn.Sigmoid()
 )
+
+if torch.cuda.device_count() > 1:
+    print(f'Number of GPUs: {torch.cuda.device_count()}', flush=True)
+    net = nn.DataParallel(net)
+
 net.to(device)
