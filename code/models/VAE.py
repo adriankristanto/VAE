@@ -83,10 +83,10 @@ class VAE(nn.Module):
     def forward(self, x):
         x = self.encoder(x)
         mean, log_var = self.latent_layer(x), self.latent_layer(x)
-        z = sampling(mean, log_var)
+        z = self.sampling(mean, log_var)
         x = self.decoder(z)
         return x
 
 if __name__ == "__main__":
     vae = VAE([784, 400], nn.LeakyReLU(), 20, [20, 400, 784], nn.LeakyReLU(), nn.Sigmoid())
-    print(vae)
+    print(vae(torch.randn((1, 784))))
