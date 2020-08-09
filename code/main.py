@@ -41,10 +41,10 @@ Total data: {len(trainset) + len(testset)}
 Z_DIM = 20
 
 net = VAE(
-    encoder_dim=[28 * 28 * 1, 400], 
+    encoder_dim=[28 * 28 * 1, 512, 256, 128], 
     encoder_activation=nn.LeakyReLU(), 
     z_dim=Z_DIM, 
-    decoder_dim=[20, 400, 784], 
+    decoder_dim=[20, 128, 256, 512, 784], 
     decoder_activation=nn.LeakyReLU(),
     output_activation=nn.Sigmoid()
 )
@@ -79,7 +79,7 @@ optimizer = optim.Adam(net.parameters(), lr=LEARNING_RATE)
 MODEL_DIRPATH = os.path.dirname(os.path.realpath(__file__)) + '/../saved_models/'
 GENERATED_DIRPATH = os.path.dirname(os.path.realpath(__file__)) + '/../generated_images/'
 CONTINUE_TRAIN = False
-CONTINUE_TRAIN_NAME = MODEL_DIRPATH + 'model-epoch10.pth'
+CONTINUE_TRAIN_NAME = MODEL_DIRPATH + 'vae-model-epoch10.pth'
 EPOCH = 50
 SAVE_INTERVAL = 5
 # for generation
@@ -108,7 +108,7 @@ def generate(sample, filename):
         torchvision.utils.save_image(sample, filename)
 
 # generate data after visualisation
-generate(SAMPLE, GENERATED_DIRPATH + 'sample_0.png')
+generate(SAMPLE, GENERATED_DIRPATH + 'vae_sample_0.png')
 
 for epoch in range(next_epoch, EPOCH):
     running_loss = 0.0
@@ -129,7 +129,7 @@ for epoch in range(next_epoch, EPOCH):
         running_loss += loss.item()
     
     # reference: https://github.com/pytorch/examples/blob/master/vae/main.py
-    generate(SAMPLE, GENERATED_DIRPATH + f'sample_{epoch+1}.png')
+    generate(SAMPLE, GENERATED_DIRPATH + f'vae_sample_{epoch+1}.png')
     
     if (epoch + 1) % SAVE_INTERVAL == 0:
         torch.save({
@@ -137,6 +137,6 @@ for epoch in range(next_epoch, EPOCH):
             'epoch' : epoch + 1,
             'net_state_dict' : net.state_dict(),
             'optimizer_state_dict' : optimizer.state_dict(),
-        }, MODEL_DIRPATH + f'model-epoch{epoch + 1}.pth')
+        }, MODEL_DIRPATH + f'vae-model-epoch{epoch + 1}.pth')
 
     print(f'Training Loss: {running_loss / len(trainloader)}')
