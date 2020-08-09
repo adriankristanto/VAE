@@ -41,10 +41,10 @@ Total data: {len(trainset) + len(testset)}
 Z_DIM = 20
 
 net = VAE(
-    encoder_dim=[28 * 28 * 1, 512], 
+    encoder_dim=[28 * 28 * 1, 400], 
     encoder_activation=nn.ReLU(), 
     z_dim=Z_DIM, 
-    decoder_dim=[20, 512, 784], 
+    decoder_dim=[20, 400, 784], 
     decoder_activation=nn.ReLU(),
     output_activation=nn.Sigmoid()
 )
@@ -61,7 +61,7 @@ def vae_loss(x_reconstructed, x_original, mean, log_var):
     # reference: https://stats.stackexchange.com/questions/318748/deriving-the-kl-divergence-loss-for-vaes
     # reference: https://wiseodd.github.io/techblog/2016/12/10/variational-autoencoder/
     # reconstruction loss
-    mse_loss = F.binary_cross_entropy(x_reconstructed, x_original)
+    mse_loss = F.mse_loss(x_reconstructed, x_original)
     # KL divergence
     kl_divergence = -0.5 * torch.sum(1 + log_var - (mean ** 2) - torch.exp(log_var))
     return mse_loss + kl_divergence
@@ -114,6 +114,8 @@ for epoch in range(next_epoch, EPOCH):
     for train_data in tqdm(trainloader, desc=f'Epoch {epoch + 1}/{EPOCH}'):
         inputs = train_data[0].to(device)
         inputs = inputs.view(-1, FLATTEN_SIZE)
+        # bug note: make sure to not forget zero the gradients at each iteration
+        optimizer.zero_grad()
         # flatten the image as it is used as an input to a FC layer
         mean, log_var, outputs = net(inputs)
         loss = vae_loss(outputs, inputs, mean, log_var)

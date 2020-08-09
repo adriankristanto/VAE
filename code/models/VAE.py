@@ -75,7 +75,7 @@ class VAE(nn.Module):
     
     def sampling(self, mean, log_var):
         # sample from standard normal distribution
-        sigma = torch.exp(log_var * 0.5)
+        sigma = torch.exp(log_var / 2)
         # epsilon has the same shape as sigma
         epsilon = torch.randn_like(sigma)
         z = mean + sigma * epsilon
