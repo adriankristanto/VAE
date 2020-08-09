@@ -16,7 +16,6 @@ class Encoder(nn.Module):
             layers.append(layer)
             # append internal activation layer
             layers.append(activation_func)
-        print(layers)
         return nn.Sequential(*layers)
     
     def forward(self, x):
