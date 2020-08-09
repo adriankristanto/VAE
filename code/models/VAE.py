@@ -69,12 +69,13 @@ class VAE(nn.Module):
         """
         super(VAE, self).__init__()
         self.encoder = Encoder(layers_dim=encoder_dim, activation_func=encoder_activation)
-        self.latent_layer = nn.Linear(encoder_dim[-1], z_dim)
+        self.fc1 = nn.Linear(encoder_dim[-1], z_dim)
+        self.fc2 = nn.Linear(encoder_dim[-1], z_dim)
         self.decoder = Decoder(layers_dim=decoder_dim, internal_activation=decoder_activation, output_activation=output_activation)
     
     def sampling(self, mean, log_var):
         # sample from standard normal distribution
-        sigma = torch.exp(log_var / 2)
+        sigma = torch.exp(log_var * 0.5)
         # epsilon has the same shape as sigma
         epsilon = torch.randn_like(sigma)
         z = mean + sigma * epsilon
@@ -82,11 +83,12 @@ class VAE(nn.Module):
     
     def forward(self, x):
         x = self.encoder(x)
-        mean, log_var = self.latent_layer(x), self.latent_layer(x)
+        mean, log_var = self.fc1(x), self.fc2(x)
         z = self.sampling(mean, log_var)
         x = self.decoder(z)
         return mean, log_var, x
 
 if __name__ == "__main__":
     vae = VAE([784, 400], nn.LeakyReLU(), 20, [20, 400, 784], nn.LeakyReLU(), nn.Sigmoid())
-    print(vae(torch.randn((1, 784))))
+    vae(torch.randn((1, 784)))
+    print(vae)

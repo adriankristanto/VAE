@@ -42,10 +42,10 @@ Z_DIM = 20
 
 net = VAE(
     encoder_dim=[28 * 28 * 1, 400], 
-    encoder_activation=nn.LeakyReLU(), 
+    encoder_activation=nn.ReLU(), 
     z_dim=Z_DIM, 
     decoder_dim=[20, 400, 784], 
-    decoder_activation=nn.LeakyReLU(),
+    decoder_activation=nn.ReLU(),
     output_activation=nn.Sigmoid()
 )
 
@@ -68,7 +68,7 @@ def vae_loss(x_reconstructed, x_original, mean, log_var):
 
 
 # 4. define the optimiser
-LEARNING_RATE = 0.0005
+LEARNING_RATE = 0.001
 optimizer = optim.Adam(net.parameters(), lr=LEARNING_RATE)
 
 
@@ -77,7 +77,7 @@ MODEL_DIRPATH = os.path.dirname(os.path.realpath(__file__)) + '/../model/'
 GENERATED_DIRPATH = os.path.dirname(os.path.realpath(__file__)) + '/../generated_images/'
 CONTINUE_TRAIN = False
 CONTINUE_TRAIN_NAME = MODEL_DIRPATH + 'model-epoch10.pth'
-EPOCH = 1
+EPOCH = 2
 SAVE_INTERVAL = 5
 # for generation
 SAMPLE = torch.randn((BATCH_SIZE, Z_DIM))
