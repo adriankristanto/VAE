@@ -41,10 +41,10 @@ Total data: {len(trainset) + len(testset)}
 Z_DIM = 20
 
 net = VAE(
-    encoder_dim=[28 * 28 * 1, 400], 
+    encoder_dim=[28 * 28 * 1, 512], 
     encoder_activation=nn.ReLU(), 
     z_dim=Z_DIM, 
-    decoder_dim=[20, 400, 784], 
+    decoder_dim=[20, 512, 784], 
     decoder_activation=nn.ReLU(),
     output_activation=nn.Sigmoid()
 )
@@ -61,7 +61,7 @@ def vae_loss(x_reconstructed, x_original, mean, log_var):
     # reference: https://stats.stackexchange.com/questions/318748/deriving-the-kl-divergence-loss-for-vaes
     # reference: https://wiseodd.github.io/techblog/2016/12/10/variational-autoencoder/
     # reconstruction loss
-    mse_loss = F.mse_loss(x_reconstructed, x_original)
+    mse_loss = F.binary_cross_entropy(x_reconstructed, x_original)
     # KL divergence
     kl_divergence = -0.5 * torch.sum(1 + log_var - (mean ** 2) - torch.exp(log_var))
     return mse_loss + kl_divergence
@@ -73,11 +73,11 @@ optimizer = optim.Adam(net.parameters(), lr=LEARNING_RATE)
 
 
 # 5. train the model
-MODEL_DIRPATH = os.path.dirname(os.path.realpath(__file__)) + '/../model/'
+MODEL_DIRPATH = os.path.dirname(os.path.realpath(__file__)) + '/../saved_models/'
 GENERATED_DIRPATH = os.path.dirname(os.path.realpath(__file__)) + '/../generated_images/'
 CONTINUE_TRAIN = False
 CONTINUE_TRAIN_NAME = MODEL_DIRPATH + 'model-epoch10.pth'
-EPOCH = 2
+EPOCH = 10
 SAVE_INTERVAL = 5
 # for generation
 SAMPLE = torch.randn((BATCH_SIZE, Z_DIM))

@@ -90,5 +90,5 @@ class VAE(nn.Module):
 
 if __name__ == "__main__":
     vae = VAE([784, 400], nn.LeakyReLU(), 20, [20, 400, 784], nn.LeakyReLU(), nn.Sigmoid())
-    vae(torch.randn((1, 784)))
+    # vae(torch.randn((1, 784)))
     print(vae)
