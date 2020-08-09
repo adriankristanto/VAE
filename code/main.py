@@ -101,6 +101,7 @@ def generate(sample, filename):
     net.eval()
     with torch.no_grad():
         sample = sample.to(device)
+        # reference: https://stackoverflow.com/questions/50442000/dataparallel-object-has-no-attribute-init-hidden
         sample = net.module.decoder(sample) if multigpu else net.decoder(sample)
         # unflatten the image to be shown as a generated image
         sample = sample.view(BATCH_SIZE, *IMAGE_SIZE)
