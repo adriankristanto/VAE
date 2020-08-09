@@ -67,7 +67,7 @@ def vae_loss(x_reconstructed, x_original):
 
 # 4. define the optimiser
 LEARNING_RATE = 0.001
-optimiser = optim.Adam(net.parameters(), lr=LEARNING_RATE)
+optimizer = optim.Adam(net.parameters(), lr=LEARNING_RATE)
 
 
 # 5. train the model
@@ -76,3 +76,10 @@ CONTINUE_TRAIN = False
 CONTINUE_TRAIN_NAME = MODEL_DIRPATH + 'model-epoch10.pth'
 EPOCH = 20
 SAVE_INTERVAL = 5
+
+next_epoch = 0
+if CONTINUE_TRAIN:
+    checkpoint = torch.load(CONTINUE_TRAIN_NAME)
+    net.load_state_dict(checkpoint.get('net_state_dict'))
+    optimizer.load_state_dict(checkpoint.get('optimizer_state_dict'))
+    next_epoch = checkpoint.get('epoch')
