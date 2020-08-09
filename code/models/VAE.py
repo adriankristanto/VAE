@@ -1,3 +1,4 @@
+# reference: https://wiseodd.github.io/techblog/2016/12/10/variational-autoencoder/
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -13,6 +14,7 @@ class Encoder(nn.Module):
         for i in range(1, len(layers_dim)):
             layer = nn.Linear(layers_dim[i-1], layers_dim[i])
             layers.append(layer)
+            # append internal activation layer
             layers.append(activation_func)
         print(layers)
         return nn.Sequential(*layers)
@@ -33,6 +35,8 @@ class Decoder(nn.Module):
         for i in range(1, len(layers_dim)):
             layer = nn.Linear(layers_dim[i-1], layers_dim[i])
             layers.append(layer)
+            # append internal activation layer if it's not the output layer
+            # otherwise, add the output activation layer
             layers.append(internal_activation if i < len(layers_dim) - 1 else output_activation)
         return nn.Sequential(*layers)
     
@@ -70,6 +74,7 @@ class VAE(nn.Module):
         self.decoder = Decoder(layers_dim=decoder_dim, internal_activation=decoder_activation, output_activation=output_activation)
     
     def sampling(self, mean, log_var):
+        # sample from standard normal distribution
         sigma = torch.exp(log_var / 2)
         # epsilon has the same shape as sigma
         epsilon = torch.randn_like(sigma)
