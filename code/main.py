@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import torch.optim as optim
 import torchvision
 import torchvision.datasets as datasets
@@ -35,6 +36,7 @@ Total testing data: {len(testset)}
 Total data: {len(trainset) + len(testset)}
 """, flush=True)
 
+
 # 2. instantiate the network model
 net = VAE(
     encoder_dim=[28 * 28 * 1, 400], 
@@ -46,7 +48,18 @@ net = VAE(
 )
 
 if torch.cuda.device_count() > 1:
-    print(f'Number of GPUs: {torch.cuda.device_count()}', flush=True)
+    print(f'Number of GPUs: {torch.cuda.device_count()}\n', flush=True)
     net = nn.DataParallel(net)
 
 net.to(device)
+
+
+# 3. define the loss function
+def vae_loss(x_reconstructed, x_original):
+    # reference: https://stats.stackexchange.com/questions/318748/deriving-the-kl-divergence-loss-for-vaes
+    # reference: https://wiseodd.github.io/techblog/2016/12/10/variational-autoencoder/
+    # reconstruction loss
+    mse_loss = F.mse_loss(x_reconstructed, x_original)
+    # KL divergence
+    kl_divergence = -0.5 * torch.sum(1 + log_var - mean ** 2 - torch.exp(log_var))
+    return mse_loss + kl_divergence
