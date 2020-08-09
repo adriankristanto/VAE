@@ -42,10 +42,10 @@ Z_DIM = 20
 
 net = VAE(
     encoder_dim=[28 * 28 * 1, 400], 
-    encoder_activation=nn.ReLU(), 
+    encoder_activation=nn.LeakyReLU(), 
     z_dim=Z_DIM, 
     decoder_dim=[20, 400, 784], 
-    decoder_activation=nn.ReLU(),
+    decoder_activation=nn.LeakyReLU(),
     output_activation=nn.Sigmoid()
 )
 
@@ -61,7 +61,8 @@ def vae_loss(x_reconstructed, x_original, mean, log_var):
     # reference: https://stats.stackexchange.com/questions/318748/deriving-the-kl-divergence-loss-for-vaes
     # reference: https://wiseodd.github.io/techblog/2016/12/10/variational-autoencoder/
     # reconstruction loss
-    mse_loss = F.mse_loss(x_reconstructed, x_original)
+    # reduction='mean' doesn't seem to make the network learn
+    mse_loss = F.mse_loss(x_reconstructed, x_original, reduction='sum')
     # KL divergence
     kl_divergence = -0.5 * torch.sum(1 + log_var - (mean ** 2) - torch.exp(log_var))
     return mse_loss + kl_divergence
