@@ -45,14 +45,23 @@ class VAE(nn.Module):
 
     def __init__(self, encoder_dim, encoder_activation, z_dim, decoder_dim, decoder_activation, output_activation):
         """
+        Fully Connected VAE
+
+        Attributes:
+
         encoder_dim: an array of integers containing the number of nodes from the input layer up until the layer
         before the latent layer, e.g. [784, 400] will create an encoder with one layer nn.Linear(784, 400)
+
         encoder_activation: activation function to be used after each encoder layer
+
         z_dim: an integer specifying the dimension of the latent space
+
         decoder_dim: an array of integers containing the number of nodes from the input layer (the z_dim) up until 
         the output layer, e.g. [20, 400, 784] will create a decoder with 2 layers nn.Linear(20, 400) and nn.Linear(400,784)
         where 20 is the z_dim
+
         decoder_activation: activation function to be used after each decoder layer expect for the output layer
+
         output_activation: activation function to be used on the decoder output layer
         """
         super(VAE, self).__init__()
