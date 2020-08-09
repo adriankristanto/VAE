@@ -13,7 +13,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f'Current device: {device}', flush=True)
 
 # 1. load the training data
-DATA_PATH = os.path.dirname(os.path.realpath(__file__)) + '/../data'
+DATA_PATH = os.path.dirname(os.path.realpath(__file__)) + '/../data/'
 BATCH_SIZE = 64
 
 train_transform = transforms.Compose([
@@ -68,3 +68,11 @@ def vae_loss(x_reconstructed, x_original):
 # 4. define the optimiser
 LEARNING_RATE = 0.001
 optimiser = optim.Adam(net.parameters(), lr=LEARNING_RATE)
+
+
+# 5. train the model
+MODEL_DIRPATH = os.path.dirname(os.path.realpath(__file__)) + '/../model/'
+CONTINUE_TRAIN = False
+CONTINUE_TRAIN_NAME = MODEL_DIRPATH + 'model-epoch10.pth'
+EPOCH = 20
+SAVE_INTERVAL = 5
