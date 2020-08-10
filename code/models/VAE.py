@@ -1,7 +1,6 @@
 # reference: https://wiseodd.github.io/techblog/2016/12/10/variational-autoencoder/
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 class Encoder(nn.Module):
 
