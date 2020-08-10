@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import numpy as np
 
 class Encoder(nn.Module):
     def __init__(self, channels, kernels, strides, paddings, activation_func):
@@ -19,9 +20,12 @@ class Encoder(nn.Module):
         return x
 
 class Decoder(nn.Module):
-    def __init__(self, channels, kernels, strides, paddings, internal_activation, output_activation):
+    def __init__(self, z_dim, unflatten_dim, channels, kernels, strides, paddings, internal_activation, output_activation):
         super(Decoder, self).__init__()
-        self.layers = self._build(channels, kernels, strides, paddings, internal_activation, output_activation)
+        # connecting the latent space to the fc layer
+        self.fc = nn.Linear(z_dim, np.prod(unflatten_dim))
+        self.unflatten_dim = unflatten_dim
+        self.conv = self._build(channels, kernels, strides, paddings, internal_activation, output_activation)
     
     def _build(self, channels, kernels, strides, paddings, internal_activation, output_activation):
         layers = []
@@ -33,19 +37,22 @@ class Decoder(nn.Module):
         return nn.Sequential(*layers)
     
     def forward(self, x):
-        x = self.layers(x)
+        x = self.fc(x)
+        # unflatten the output and feed it to convolution layers
+        x = x.view(-1, *self.unflatten_dim)
+        x = self.conv(x)
         return x
 
 class ConvolutionalVAE(nn.Module):
     def __init__(self, 
         e_channels, e_kernels, e_strides, e_paddings, e_activation_func, 
         z_dim,
-        d_channels, d_kernels, d_strides, d_paddings, d_internal_activation, d_output_activation
+        unflatten_dim, d_channels, d_kernels, d_strides, d_paddings, d_internal_activation, d_output_activation
     ):
         super(ConvolutionalVAE, self).__init__()
         self.encoder = Encoder(e_channels, e_kernels, e_strides, e_paddings, e_activation_func)
         self.z_dim = z_dim
-        self.decoder = Decoder(d_channels, d_kernels, d_strides, d_paddings, d_internal_activation, d_output_activation)
+        self.decoder = Decoder(z_dim, unflatten_dim, d_channels, d_kernels, d_strides, d_paddings, d_internal_activation, d_output_activation)
     
     def sampling(self, mean, log_var):
         sigma = torch.exp(log_var / 2)
@@ -55,16 +62,12 @@ class ConvolutionalVAE(nn.Module):
     def forward(self, x):
         x = self.encoder(x)
         flatten_shape = x.shape[1] * x.shape[2] * x.shape[3]
-        unflatten_shape = x.shape[1:]
         # flatten
         x = x.view(-1, flatten_shape)
         mean, log_var = nn.Linear(flatten_shape, self.z_dim)(x), nn.Linear(flatten_shape, self.z_dim)(x)
         z = self.sampling(mean, log_var)
-        # connect z to a fc layer
-        z = nn.Linear(self.z_dim, flatten_shape)(z)
-        # unflatten
-        z = z.view(-1, *unflatten_shape)
         x = self.decoder(z)
+
         return mean, log_var, x
 
 
@@ -76,6 +79,7 @@ if __name__ == "__main__":
         [None, 1, 0, 0, 1], 
         nn.LeakyReLU(),
         20,
+        (128, 7, 7),
         [128, 128, 64, 32, 1],
         [3, 2, 2, 3, None],
         [1, 2, 2, 1, None],
