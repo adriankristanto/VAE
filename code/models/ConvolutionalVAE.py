@@ -28,7 +28,8 @@ class Decoder(nn.Module):
         for i in range(len(channels) - 1):
             layer = nn.ConvTranspose2d(channels[i], channels[i+1], kernels[i], strides[i], paddings[i])
             layers.append(layer)
-            layers.append(internal_activation if i < len(channels) - 1 else output_activation)
+            # the final index represent the image channel, thus, there is no activation
+            layers.append(internal_activation if i < len(channels) - 2 else output_activation)
         return nn.Sequential(*layers)
     
     def forward(self, x):
@@ -53,7 +54,6 @@ class ConvolutionalVAE(nn.Module):
     
     def forward(self, x):
         x = self.encoder(x)
-        print(x.shape)
         flatten_shape = x.shape[1] * x.shape[2] * x.shape[3]
         unflatten_shape = x.shape[1:]
         # flatten
@@ -62,6 +62,7 @@ class ConvolutionalVAE(nn.Module):
         z = self.sampling(mean, log_var)
         # connect z to a fc layer
         z = nn.Linear(self.z_dim, flatten_shape)(z)
+        # unflatten
         z = z.view(-1, *unflatten_shape)
         x = self.decoder(z)
         return x
@@ -69,16 +70,16 @@ class ConvolutionalVAE(nn.Module):
 
 if __name__ == "__main__":
     vae = ConvolutionalVAE(
-        [1, 32, 64, 128, 256], 
-        [None, 3, 2, 2, 2], 
-        [None, 1, 2, 2, 2], 
-        [None, 1, 0, 0, 0], 
+        [1, 32, 64, 128, 128], 
+        [None, 3, 2, 2, 3], 
+        [None, 1, 2, 2, 1], 
+        [None, 1, 0, 0, 1], 
         nn.LeakyReLU(),
         20,
-        [256, 128, 64, 32, 1],
-        [2, 2, 2, 3, None],
-        [2, 2, 2, 1, None],
-        [0, 0, 0, 1, None],
+        [128, 128, 64, 32, 1],
+        [3, 2, 2, 3, None],
+        [1, 2, 2, 1, None],
+        [1, 0, 0, 1, None],
         nn.LeakyReLU(),
         nn.Sigmoid()
     )
