@@ -53,15 +53,15 @@ class ConvolutionalVAE(nn.Module):
         # create a convolution decoder
         self.decoder = Decoder(d_channels, d_kernels, d_strides, d_paddings, d_internal_activation, d_output_activation)
         # get the shape to be used for creating the fc layer in both encode and decode function
-        self.unflatten_shape = self._initialize(input_shape)
+        self.unflatten_shape = self._initialize(input_shape, e_channels[-1], e_kernels[1:], e_strides[1:], e_paddings[1:])
     
-    def _initialize(self, input_shape):
-        sample = torch.unsqueeze(torch.randn(input_shape), 0)
-        sample = sample.to(device)
-        tmp = self.encoder 
-        tmp.to(device)
-        x = tmp(sample)
-        return x.shape[1:]
+    def _initialize(self, input_shape, e_channel, e_kernels, e_strides, e_paddings):
+        _, input_height, input_width = input_shape
+        for i in range(len(e_kernels)):
+            input_height = (input_height + 2 * e_paddings[i] - e_kernels[i]) // e_strides[i] + 1
+            input_width = (input_width + 2 * e_paddings[i] - e_kernels[i]) // e_strides[i] + 1
+
+        return e_channel, input_height, input_width
     
     def sampling(self, mean, log_var):
         sigma = torch.exp(log_var / 2)
