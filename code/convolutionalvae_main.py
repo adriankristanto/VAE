@@ -40,13 +40,13 @@ Total data: {len(trainset) + len(testset)}
 
 # 2. instantiate the model
 Z_DIM = 20
-net = VAE(
+net = ConvolutionalVAE(
     input_shape=(1, 28, 28),
     e_channels=[1, 32, 64, 128, 128],
     e_kernels=[None, 3, 2, 2, 3],
     e_strides=[None, 1, 2, 2, 1],
     e_paddings=[None, 1, 0, 0, 1],
-    e_activation_function=nn.LeakyReLU(),
+    e_activation_func=nn.LeakyReLU(),
     z_dim=Z_DIM,
     d_channels=[128, 128, 64, 32, 1],
     d_kernels=[3, 2, 2, 3, None],
@@ -109,7 +109,7 @@ for epoch in range(next_epoch, EPOCH):
     n = 0
 
     net.train()
-    for train_data in tqdm(dataloader, desc=f'Epoch {epoch+1}/{EPOCH}'):
+    for train_data in tqdm(trainloader, desc=f'Epoch {epoch+1}/{EPOCH}'):
         inputs = train_data[0].to(device)
         optimizer.zero_grad()
         mean, log_var, outputs = net(inputs)
