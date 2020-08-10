@@ -25,7 +25,7 @@ net.load_state_dict(checkpoint.get('net_state_dict'))
 # generate new image
 sample = torch.randn((1, Z_DIM))
 print(f'Sample: {sample}\n')
-sample = net.decoder(sample)
+sample = net.decode(sample)
 sample = sample.view(-1, *[1, 28, 28])
 filename = datetime.now().strftime("%d_%m_%Y_%H%M%S")
 torchvision.utils.save_image(sample, f'{filename}.png')
