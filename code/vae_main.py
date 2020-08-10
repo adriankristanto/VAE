@@ -142,7 +142,7 @@ for epoch in range(next_epoch, EPOCH):
             'optimizer_state_dict' : optimizer.state_dict(),
         }, MODEL_DIRPATH + f'vae-model-epoch{epoch + 1}.pth')
 
-    print(f'Training Loss: {running_loss / n}')
+    print(f'Training Loss: {running_loss / n}', flush=True)
 
 
 # 6. test the model
