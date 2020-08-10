@@ -79,7 +79,7 @@ class ConvolutionalVAE(nn.Module):
     
     def decode(self, z):
         flatten_shape = np.prod(self.unflatten_shape)
-        x = self.fc3(self.z_dim, flatten_shape)(z)
+        x = self.fc3(z)
         x = x.view(-1, *self.unflatten_shape)
         x = self.decoder(x)
         return x
