@@ -49,6 +49,7 @@ class ConvolutionalVAE(nn.Module):
         self.unflatten_shape = self._initialize(input_shape, e_channels[-1], e_kernels[1:], e_strides[1:], e_paddings[1:])
         # create a convolution encoder
         self.encoder = Encoder(e_channels, e_kernels, e_strides, e_paddings, e_activation_func)
+        # bug note: make sure to declare all the models to be used here, NOT inside any other function
         self.fc1 = nn.Linear(np.prod(self.unflatten_shape), z_dim)
         self.fc2 = nn.Linear(np.prod(self.unflatten_shape), z_dim)
         self.fc3 = nn.Linear(z_dim, np.prod(self.unflatten_shape))
