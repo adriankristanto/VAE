@@ -91,7 +91,7 @@ class VAE(nn.Module):
         return x
     
     def forward(self, x):
-        z = self.encode(x)
+        mean, log_var, z = self.encode(x)
         x = self.decode(z)
         return mean, log_var, x
 
