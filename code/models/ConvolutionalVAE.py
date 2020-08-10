@@ -56,7 +56,9 @@ class ConvolutionalVAE(nn.Module):
         self.unflatten_shape = self._initialize(input_shape)
     
     def _initialize(self, input_shape):
-        x = self.encoder(torch.unsqueeze(torch.randn(input_shape), 0).to(device))
+        sample = torch.unsqueeze(torch.randn(input_shape), 0)
+        sample = sample.to(device)
+        x = self.encoder(sample)
         return x.shape[1:]
     
     def sampling(self, mean, log_var):
