@@ -45,13 +45,16 @@ class ConvolutionalVAE(nn.Module):
         d_channels, d_kernels, d_strides, d_paddings, d_internal_activation, d_output_activation
     ):
         super(ConvolutionalVAE, self).__init__()
-        # create a convolution encoder
-        self.encoder = Encoder(e_channels, e_kernels, e_strides, e_paddings, e_activation_func)
-        self.z_dim = z_dim
-        # create a convolution decoder
-        self.decoder = Decoder(d_channels, d_kernels, d_strides, d_paddings, d_internal_activation, d_output_activation)
         # get the shape to be used for creating the fc layer in both encode and decode function
         self.unflatten_shape = self._initialize(input_shape, e_channels[-1], e_kernels[1:], e_strides[1:], e_paddings[1:])
+        # create a convolution encoder
+        self.encoder = Encoder(e_channels, e_kernels, e_strides, e_paddings, e_activation_func)
+        self.fc1 = nn.Linear(np.prod(self.unflatten_shape), z_dim)
+        self.fc2 = nn.Linear(np.prod(self.unflatten_shape), z_dim)
+        self.fc3 = nn.Linear(z_dim, np.prod(self.unflatten_shape))
+        # create a convolution decoder
+        self.decoder = Decoder(d_channels, d_kernels, d_strides, d_paddings, d_internal_activation, d_output_activation)
+        
     
     def _initialize(self, input_shape, e_channel, e_kernels, e_strides, e_paddings):
         _, input_height, input_width = input_shape
@@ -70,13 +73,13 @@ class ConvolutionalVAE(nn.Module):
         x = self.encoder(x)
         flatten_shape = np.prod(self.unflatten_shape)
         x = x.view(-1, flatten_shape)
-        mean, log_var = nn.Linear(flatten_shape, self.z_dim)(x), nn.Linear(flatten_shape, self.z_dim)(x)
+        mean, log_var = self.fc1(x), self.fc2(x)
         z = self.sampling(mean, log_var)
         return mean, log_var, z
     
     def decode(self, z):
         flatten_shape = np.prod(self.unflatten_shape)
-        x = nn.Linear(self.z_dim, flatten_shape)(z)
+        x = self.fc3(self.z_dim, flatten_shape)(z)
         x = x.view(-1, *self.unflatten_shape)
         x = self.decoder(x)
         return x
