@@ -8,14 +8,14 @@ import torchvision.transforms as transforms
 from tqdm import tqdm
 import os
 from models.VAE import VAE
-import time
+from datetime import datetime
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f'Current device: {device}', flush=True)
 
 # 1. load the training data
 DATA_PATH = os.path.dirname(os.path.realpath(__file__)) + '/../data/'
-BATCH_SIZE = 64
+BATCH_SIZE = 128
 
 train_transform = transforms.Compose([
     transforms.ToTensor()
@@ -81,7 +81,7 @@ MODEL_DIRPATH = os.path.dirname(os.path.realpath(__file__)) + '/../saved_models/
 GENERATED_DIRPATH = os.path.dirname(os.path.realpath(__file__)) + '/../generated_images/'
 CONTINUE_TRAIN = False
 CONTINUE_TRAIN_NAME = MODEL_DIRPATH + 'vae-model-epoch10.pth'
-EPOCH = 5
+EPOCH = 50
 SAVE_INTERVAL = 5
 # for generation
 SAMPLE = torch.randn((BATCH_SIZE, Z_DIM))
@@ -162,7 +162,7 @@ with torch.no_grad():
             SEE_FLAG = False
             real = inputs.view(-1, *IMAGE_SIZE)
             reconstructed = outputs.view(-1, *IMAGE_SIZE)
-            filename = time.time()
+            filename = datetime.now().strftime("%d_%m_%Y_%H%M%S")
             torchvision.utils.save_image(real, RECONSTRUCTED_DIRPATH + f'vae_real_{filename}.png', pad_value=1)
             torchvision.utils.save_image(reconstructed, RECONSTRUCTED_DIRPATH + f'vae_reconstructed_{filename}.png', pad_value=1)
 
