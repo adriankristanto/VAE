@@ -80,11 +80,19 @@ class VAE(nn.Module):
         z = mean + sigma * epsilon
         return z
     
-    def forward(self, x):
+    def encode(self, x):
         x = self.encoder(x)
         mean, log_var = self.fc1(x), self.fc2(x)
         z = self.sampling(mean, log_var)
-        x = self.decoder(z)
+        return mean, log_var, z
+
+    def decode(self, x):
+        x = self.decoder(x)
+        return x
+    
+    def forward(self, x):
+        z = self.encode(x)
+        x = self.decode(z)
         return mean, log_var, x
 
 
