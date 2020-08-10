@@ -65,7 +65,7 @@ class ConvolutionalVAE(nn.Module):
         # unflatten
         z = z.view(-1, *unflatten_shape)
         x = self.decoder(z)
-        return x
+        return mean, log_var, x
 
 
 if __name__ == "__main__":
