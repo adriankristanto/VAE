@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 import numpy as np
 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 class Encoder(nn.Module):
     def __init__(self, channels, kernels, strides, paddings, activation_func):
         super(Encoder, self).__init__()
@@ -54,7 +56,7 @@ class ConvolutionalVAE(nn.Module):
         self.unflatten_shape = self._initialize(input_shape)
     
     def _initialize(self, input_shape):
-        x = self.encoder(torch.unsqueeze(torch.randn(input_shape), 0))
+        x = self.encoder(torch.unsqueeze(torch.randn(input_shape), 0).to(device))
         return x.shape[1:]
     
     def sampling(self, mean, log_var):
