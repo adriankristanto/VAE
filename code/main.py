@@ -8,6 +8,7 @@ import torchvision.transforms as transforms
 from tqdm import tqdm
 import os
 from models.VAE import VAE
+import time
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f'Current device: {device}', flush=True)
@@ -80,7 +81,7 @@ MODEL_DIRPATH = os.path.dirname(os.path.realpath(__file__)) + '/../saved_models/
 GENERATED_DIRPATH = os.path.dirname(os.path.realpath(__file__)) + '/../generated_images/'
 CONTINUE_TRAIN = False
 CONTINUE_TRAIN_NAME = MODEL_DIRPATH + 'vae-model-epoch10.pth'
-EPOCH = 50
+EPOCH = 5
 SAVE_INTERVAL = 5
 # for generation
 SAMPLE = torch.randn((BATCH_SIZE, Z_DIM))
@@ -112,6 +113,7 @@ generate(SAMPLE, GENERATED_DIRPATH + 'vae_sample_0.png')
 
 for epoch in range(next_epoch, EPOCH):
     running_loss = 0.0
+    n = 0
 
     net.train()
     print(f'Currently training: {net.training}', flush=True)
@@ -127,6 +129,7 @@ for epoch in range(next_epoch, EPOCH):
         optimizer.step()
 
         running_loss += loss.item()
+        n += len(inputs)
     
     # reference: https://github.com/pytorch/examples/blob/master/vae/main.py
     generate(SAMPLE, GENERATED_DIRPATH + f'vae_sample_{epoch+1}.png')
@@ -139,4 +142,28 @@ for epoch in range(next_epoch, EPOCH):
             'optimizer_state_dict' : optimizer.state_dict(),
         }, MODEL_DIRPATH + f'vae-model-epoch{epoch + 1}.pth')
 
-    print(f'Training Loss: {running_loss / len(trainloader)}')
+    print(f'Training Loss: {running_loss / n}')
+
+
+# 6. test the model
+# reference: https://github.com/pytorch/examples/blob/master/vae/main.py
+RECONSTRUCTED_DIRPATH = os.path.dirname(os.path.realpath(__file__)) + '/../reconstructed_images/'
+
+test_loss = 0.0
+net.eval()
+SEE_FLAG = True
+with torch.no_grad():
+    for test_data in tqdm(testloader):
+        inputs = test_data[0].to(device)
+        inputs = inputs.view(-1, FLATTEN_SIZE)
+        mean, log_var, outputs = net(inputs)
+        test_loss += vae_loss(outputs, inputs, mean, log_var)
+        if SEE_FLAG:
+            SEE_FLAG = False
+            real = inputs.view(-1, *IMAGE_SIZE)
+            reconstructed = outputs.view(-1, *IMAGE_SIZE)
+            filename = time.time()
+            torchvision.utils.save_image(real, RECONSTRUCTED_DIRPATH + f'vae_real_{filename}.png', pad_value=1)
+            torchvision.utils.save_image(reconstructed, RECONSTRUCTED_DIRPATH + f'vae_reconstructed_{filename}.png', pad_value=1)
+
+print(f'Test loss: {test_loss / len(testset)}')
