@@ -58,7 +58,9 @@ class ConvolutionalVAE(nn.Module):
     def _initialize(self, input_shape):
         sample = torch.unsqueeze(torch.randn(input_shape), 0)
         sample = sample.to(device)
-        x = self.encoder(sample)
+        tmp = self.encoder 
+        tmp.to(device)
+        x = tmp(sample)
         return x.shape[1:]
     
     def sampling(self, mean, log_var):
