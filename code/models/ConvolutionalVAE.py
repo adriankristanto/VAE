@@ -3,9 +3,11 @@ import torch.nn as nn
 
 class Encoder(nn.Module):
 
-    def __init__(self, channels, kernels, strides, paddings, batch_norm, activation):
+    def __init__(self, channels, kernels, strides, paddings, batch_norm, activation, hidden_dim, z_dim):
         super(Encoder, self).__init__()
         self.layers = self._build(channels, kernels, strides, paddings, batch_norm, activation)
+        self.mean = nn.Linear(hidden_dim, z_dim)
+        self.log_var = nn.Linear(hidden_dim, z_dim)
     
     def _build(self, channels, kernels, strides, paddings, batch_norm, activation):
         layers = []
@@ -27,7 +29,16 @@ class Encoder(nn.Module):
             # add activation function
             layers.append(activation)
         return nn.Sequential(*layers)
+    
+    def sampling(self, mean, log_var):
+        # reparameterisation trick
+        sigma = torch.exp(log_var / 2)
+        epsilon = torch.randn_like(sigma)
+        return mean + sigma * epsilon
 
     def forward(self, x):
         x = self.layers(x)
-        return x
+        mean = self.mean(x)
+        log_var = self.log_var(x)
+        z = self.sampling(mean, log_var)
+        return mean, log_var, z
