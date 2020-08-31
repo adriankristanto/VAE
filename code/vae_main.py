@@ -113,7 +113,6 @@ generate(SAMPLE, GENERATED_DIRPATH + 'vae_sample_0.png')
 
 for epoch in range(next_epoch, EPOCH):
     running_loss = 0.0
-    n = 0
 
     net.train()
     print(f'Currently training: {net.training}', flush=True)
@@ -129,7 +128,6 @@ for epoch in range(next_epoch, EPOCH):
         optimizer.step()
 
         running_loss += loss.item()
-        n += len(inputs)
     
     # reference: https://github.com/pytorch/examples/blob/master/vae/main.py
     generate(SAMPLE, GENERATED_DIRPATH + f'vae_sample_{epoch+1}.png')
@@ -142,7 +140,7 @@ for epoch in range(next_epoch, EPOCH):
             'optimizer_state_dict' : optimizer.state_dict(),
         }, MODEL_DIRPATH + f'vae-model-epoch{epoch + 1}.pth')
 
-    print(f'Training Loss: {running_loss / n}', flush=True)
+    print(f'Training Loss: {running_loss / len(trainloader)}', flush=True)
 
 
 # 6. test the model
@@ -166,4 +164,4 @@ with torch.no_grad():
             torchvision.utils.save_image(real, RECONSTRUCTED_DIRPATH + f'vae_real_{filename}.png', pad_value=1)
             torchvision.utils.save_image(reconstructed, RECONSTRUCTED_DIRPATH + f'vae_reconstructed_{filename}.png', pad_value=1)
 
-print(f'Test loss: {test_loss / len(testset)}')
+print(f'Test loss: {test_loss / len(testloader)}')
