@@ -108,7 +108,6 @@ generate(SAMPLE, GENERATED_DIRPATH + 'convolutionalvae_sample_0.png')
 
 for epoch in range(next_epoch, EPOCH):
     running_loss = 0.0
-    n = 0
 
     net.train()
     for train_data in tqdm(trainloader, desc=f'Epoch {epoch+1}/{EPOCH}'):
@@ -120,7 +119,6 @@ for epoch in range(next_epoch, EPOCH):
         optimizer.step()
 
         running_loss += loss.item()
-        n += len(inputs)
     
     generate(SAMPLE, GENERATED_DIRPATH + f'convolutionalvae_sample_{epoch+1}.png')
 
@@ -131,7 +129,7 @@ for epoch in range(next_epoch, EPOCH):
             'optimizer_state_dict' : optimizer.state_dict(),
         }, MODEL_DIRPATH + f'convolutionalvae-model-epoch{epoch + 1}.pth')
     
-    print(f'Training loss: {running_loss / n}', flush=True)
+    print(f'Training loss: {running_loss / len(trainloader)}', flush=True)
 
 
 # 6. test the model
@@ -150,4 +148,4 @@ with torch.no_grad():
             filename = datetime.now().strftime("%d_%m_%Y_%H%M%S")
             torchvision.utils.save_image(inputs, RECONSTRUCTED_DIRPATH + f'convolutionalvae_real_{filename}.png', pad_value=1)
             torchvision.utils.save_image(outputs, RECONSTRUCTED_DIRPATH + f'convolutionalvae_reconstructed_{filename}.png', pad_value=1)
-print(f'Test loss: {test_loss / len(testset)}')
+print(f'Test loss: {test_loss / len(testloader)}')
